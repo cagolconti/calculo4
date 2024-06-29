@@ -1,0 +1,66 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation, PillowWriter
+from mpl_toolkits.mplot3d import Axes3D
+
+def u(x, t, N=100):
+    """
+    Calcula o valor de u(x, t) conforme a série fornecida.
+    """
+    pi = np.pi
+    sum_series = 0
+    
+    for n in range(1, N + 1):
+        term = (8 / (pi**2 * n**2)) * (np.sin(n * pi / 4) + np.sin(3 * pi * n / 4)) * \
+               np.sin(n * x * pi / 10) * np.cos(n * t * pi / 10)
+        sum_series += term
+
+    return sum_series
+
+# Valores de x e t
+x_values = np.linspace(0, 10, 100)  # 100 pontos entre 0 e 10
+t_values = np.linspace(0, 10, 100)  # 100 pontos entre 0 e 10
+
+# Criação da figura 3D
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+X, T = np.meshgrid(x_values, t_values)
+Z = np.zeros_like(X)
+
+# Configuração da figura
+ax.set_xlim(0, 10)
+ax.set_ylim(0, 10)
+ax.set_zlim(-1, 1)
+ax.set_xlabel('X')
+ax.set_ylabel('T')
+ax.set_zlabel('U')
+
+# Função de inicialização
+def init():
+    ax.plot_surface(X, T, Z, cmap='viridis')
+    return fig,
+
+# Função de atualização
+def update(frame):
+    t = t_values[frame]
+    for i in range(len(x_values)):
+        Z[:, i] = [u(x_values[i], t) for t in t_values]
+    ax.clear()
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, 10)
+    ax.set_zlim(-1, 1)
+    ax.set_xlabel('X')
+    ax.set_ylabel('T')
+    ax.set_zlabel('U')
+    ax.plot_surface(X, T, Z, cmap='viridis')
+    return fig,
+
+# Criação da animação
+ani = FuncAnimation(fig, update, frames=len(t_values), init_func=init, blit=False, interval=100)
+
+# Salvar a animação como GIF
+ani.save('animacao_3d.gif', writer=PillowWriter(fps=10))
+
+# Mostrar a animação no notebook
+from IPython.display import Image
+Image(filename='animacao_3d.gif')
